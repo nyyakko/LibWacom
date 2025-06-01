@@ -5,9 +5,8 @@
 
 namespace libwacom {
 
-class Device
+struct Device
 {
-public:
     ENUM_CLASS(Kind, STYLUS, PAD, ERASER, TOUCH)
 
     std::string name;

@@ -2,6 +2,7 @@
 
 #include "Command.hpp"
 
+#include <iostream>
 #include <liberror/Try.hpp>
 
 #include <algorithm>
@@ -19,7 +20,7 @@ Result<std::vector<Device>> libwacom::get_available_devices()
     auto fnTrim = [] (auto const& value) {
         auto result = value;
         result.erase(result.begin(), std::ranges::find_if(result, std::not_fn(isspace)));
-        result.erase(std::ranges::find_if(result, std::not_fn(isspace)), result.end());
+        result.erase(std::find_if(result.rbegin(), result.rend(), std::not_fn(isspace)).base(), result.end());
         return result;
     };
 
@@ -29,9 +30,9 @@ Result<std::vector<Device>> libwacom::get_available_devices()
     for (; iterator != std::sregex_iterator{}; iterator = std::next(iterator))
     {
         devices.push_back({
-            fnTrim(iterator->str(1)),
-            std::atoi(fnTrim(iterator->str(2)).data()),
-            Device::Kind::from_string(fnTrim(iterator->str(3)))
+            .name = fnTrim(iterator->str(1)),
+            .id = std::atoi(fnTrim(iterator->str(2)).data()),
+            .kind = Device::Kind::from_string(fnTrim(iterator->str(3)))
         });
     }
 
