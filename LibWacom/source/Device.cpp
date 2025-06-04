@@ -133,3 +133,17 @@ Result<void> libwacom::reset_stylus_area(int stylus)
     TRY(xsetwacom::execute(command));
     return {};
 }
+
+Result<void> libwacom::set_stylus_output_from_display_name(int stylus, std::string_view displayName)
+{
+    auto command = fmt::format("--set \"{}\" MapToOutput {}", stylus, displayName);
+    TRY(xsetwacom::execute(command));
+    return {};
+}
+
+Result<void> libwacom::set_stylus_output_from_display_area(int stylus, Area area)
+{
+    auto command = fmt::format("--set \"{}\" MapToOutput {}x{}+{}+{}", stylus, std::round(area.width), std::round(area.height), std::round(area.offsetX), std::round(area.offsetY));
+    TRY(xsetwacom::execute(command));
+    return {};
+}
