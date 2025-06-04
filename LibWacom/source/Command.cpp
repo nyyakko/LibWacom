@@ -9,7 +9,7 @@ using namespace libwacom;
 Result<std::string> xsetwacom::execute(std::string_view command)
 {
     std::string output {};
-    auto fd = popen(command.data(), "r");
+    auto fd = popen(fmt::format("xsetwacom {}", command).data(), "r");
     if (fd == nullptr)
         return make_error("File descriptor for xsetwacom command returned as nullptr");
 

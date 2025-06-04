@@ -2,7 +2,6 @@
 
 #include "Command.hpp"
 
-#include <iostream>
 #include <liberror/Try.hpp>
 
 #include <algorithm>
@@ -24,7 +23,7 @@ Result<std::vector<Device>> libwacom::get_available_devices()
         return result;
     };
 
-    auto output = TRY(xsetwacom::execute("xsetwacom --list devices"));
+    auto output = TRY(xsetwacom::execute("--list devices"));
     std::regex pattern(R"((.+)\s+id: (\d+)\s+type: (\w+))");
     std::sregex_iterator iterator(output.begin(), output.end(), pattern);
     for (; iterator != std::sregex_iterator{}; iterator = std::next(iterator))
@@ -42,7 +41,7 @@ Result<std::vector<Device>> libwacom::get_available_devices()
 Result<Pressure> libwacom::get_stylus_pressure_curve(int stylus)
 {
     Pressure pressure {};
-    auto command = fmt::format("xsetwacom --get {} PressureCurve", stylus);
+    auto command = fmt::format("--get {} PressureCurve", stylus);
     auto output = TRY(xsetwacom::execute(command));
     std::stringstream sstream(output);
     sstream >> pressure.minX >> pressure.minY;
@@ -56,7 +55,7 @@ Result<Pressure> libwacom::get_stylus_pressure_curve(int stylus)
 
 Result<void> libwacom::set_stylus_pressure_curve(int stylus, Pressure pressure)
 {
-    auto command = fmt::format("xsetwacom --set {} PressureCurve {} {} {} {}",
+    auto command = fmt::format("--set {} PressureCurve {} {} {} {}",
         stylus,
         static_cast<int>(std::round(pressure.minX * 100.f)),
         static_cast<int>(std::round(pressure.minY * 100.f)),
@@ -70,7 +69,7 @@ Result<void> libwacom::set_stylus_pressure_curve(int stylus, Pressure pressure)
 Result<int> libwacom::get_stylus_threshold(int stylus)
 {
     auto threshold = 0;
-    auto command = fmt::format("xsetwacom --get {} Threshold", stylus);
+    auto command = fmt::format("--get {} Threshold", stylus);
     auto output = TRY(xsetwacom::execute(command));
     std::stringstream sstream(output);
     sstream >> threshold;
@@ -79,7 +78,7 @@ Result<int> libwacom::get_stylus_threshold(int stylus)
 
 Result<void> libwacom::set_stylus_threshold(int stylus, int threshold)
 {
-    auto command = fmt::format("xsetwacom --set {} Threshold {}", stylus, threshold);
+    auto command = fmt::format("--set {} Threshold {}", stylus, threshold);
     auto output = TRY(xsetwacom::execute(command));
     return {};
 }
@@ -87,7 +86,7 @@ Result<void> libwacom::set_stylus_threshold(int stylus, int threshold)
 Result<int> libwacom::get_stylus_cursor_proximity(int stylus)
 {
     auto proximity = 0;
-    auto command = fmt::format("xsetwacom --get {} CursorProximity", stylus);
+    auto command = fmt::format("--get {} CursorProximity", stylus);
     auto output = TRY(xsetwacom::execute(command));
     std::stringstream sstream(output);
     sstream >> proximity;
@@ -96,7 +95,7 @@ Result<int> libwacom::get_stylus_cursor_proximity(int stylus)
 
 Result<void> libwacom::set_stylus_cursor_proximity(int stylus, int proximity)
 {
-    auto command = fmt::format("xsetwacom --set {} CursorProximity {}", stylus, proximity);
+    auto command = fmt::format("--set {} CursorProximity {}", stylus, proximity);
     auto output = TRY(xsetwacom::execute(command));
     return {};
 }
@@ -113,7 +112,7 @@ Result<Area> libwacom::get_stylus_default_area(int stylus)
 Result<Area> libwacom::get_stylus_area(int stylus)
 {
     Area area {};
-    auto command = fmt::format("xsetwacom --get {} Area", stylus);
+    auto command = fmt::format("--get {} Area", stylus);
     auto output = TRY(xsetwacom::execute(command));
     std::stringstream sstream(output);
     sstream >> area.offsetX >> area.offsetY;
@@ -123,14 +122,14 @@ Result<Area> libwacom::get_stylus_area(int stylus)
 
 Result<void> libwacom::set_stylus_area(int stylus, Area area)
 {
-    auto command = fmt::format("xsetwacom --set {} Area {} {} {} {}", stylus, area.offsetX, area.offsetY, area.width, area.height);
+    auto command = fmt::format("--set {} Area {} {} {} {}", stylus, area.offsetX, area.offsetY, area.width, area.height);
     TRY(xsetwacom::execute(command));
     return {};
 }
 
 Result<void> libwacom::reset_stylus_area(int stylus)
 {
-    auto command = fmt::format("xsetwacom --set {} ResetArea", stylus);
+    auto command = fmt::format("--set {} ResetArea", stylus);
     TRY(xsetwacom::execute(command));
     return {};
 }
