@@ -34,6 +34,7 @@ liberror::Result<int> get_stylus_threshold(int stylus);
 liberror::Result<void> set_stylus_threshold(int stylus, int threshold);
 liberror::Result<int> get_stylus_cursor_proximity(int stylus);
 liberror::Result<void> set_stylus_cursor_proximity(int stylus, int proximity);
+liberror::Result<Area> get_stylus_default_area(int stylus);
 liberror::Result<Area> get_stylus_area(int stylus);
 liberror::Result<void> set_stylus_area(int stylus, Area area);
 liberror::Result<void> reset_stylus_area(int stylus);

@@ -101,6 +101,15 @@ Result<void> libwacom::set_stylus_cursor_proximity(int stylus, int proximity)
     return {};
 }
 
+Result<Area> libwacom::get_stylus_default_area(int stylus)
+{
+    auto previousArea = TRY(get_stylus_area(stylus));
+    TRY(reset_stylus_area(stylus));
+    auto defaultArea = TRY(get_stylus_area(stylus));
+    TRY(set_stylus_area(stylus, previousArea));
+    return defaultArea;
+}
+
 Result<Area> libwacom::get_stylus_area(int stylus)
 {
     Area area {};
