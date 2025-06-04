@@ -24,9 +24,8 @@ struct Pressure
 
 struct Area
 {
-    int offsetX, offsetY;
-    int width;
-    int height;
+    float offsetX, offsetY;
+    float width, height;
 };
 
 liberror::Result<Pressure> get_stylus_pressure_curve(int stylus);
