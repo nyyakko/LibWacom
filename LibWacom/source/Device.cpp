@@ -122,7 +122,7 @@ Result<Area> libwacom::get_stylus_area(int stylus)
 
 Result<void> libwacom::set_stylus_area(int stylus, Area area)
 {
-    auto command = fmt::format("--set {} Area {} {} {} {}", stylus, area.offsetX, area.offsetY, area.width, area.height);
+    auto command = fmt::format("--set {} Area {} {} {} {}", stylus, std::round(area.offsetX), std::round(area.offsetY), std::round(area.width), std::round(area.height));
     TRY(xsetwacom::execute(command));
     return {};
 }
