@@ -1,5 +1,6 @@
 #include "Device.hpp"
 
+#include <fmt/format.h>
 #include <liberror/Try.hpp>
 
 #include <algorithm>

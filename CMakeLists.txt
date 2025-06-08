@@ -35,6 +35,7 @@ CPMFindPackage(
 )
 
 set(LibWacom_ExternalLibraries
+    fmt::fmt
     LibError::LibError
     LibEnum::LibEnum
 )
