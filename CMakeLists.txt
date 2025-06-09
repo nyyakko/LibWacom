@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.25)
 
 project(LibWacom LANGUAGES CXX)
 
-include(cmake/static_analyzers.cmake)
 include(cmake/get_cpm.cmake)
 include(cmake/enable_tests.cmake)
 include(GNUInstallDirs)
@@ -10,9 +9,6 @@ include(GNUInstallDirs)
 if (ENABLE_TESTING)
     enable_tests(${PROJECT_NAME})
 endif()
-
-set(LibWacom_CompilerOptions ${LibWacom_CompilerOptions} -Wno-gnu-statement-expression-from-macro-expansion)
-# set(LibWacom_LinkerOptions ${LibWacom_LinkerOptions})
 
 CPMAddPackage("gh:fmtlib/fmt#10.2.1")
 
@@ -33,6 +29,11 @@ CPMFindPackage(
     GITHUB_REPOSITORY nyyakko/LibEnum
     GIT_TAG master
 )
+
+include(cmake/static_analyzers.cmake)
+
+set(LibWacom_CompilerOptions ${LibWacom_CompilerOptions} -Wno-gnu-statement-expression-from-macro-expansion)
+# set(LibWacom_LinkerOptions ${LibWacom_LinkerOptions})
 
 set(LibWacom_ExternalLibraries
     fmt::fmt
