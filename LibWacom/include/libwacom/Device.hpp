@@ -9,7 +9,7 @@ namespace libwacom {
 
 struct Device
 {
-    ENUM_CLASS(Kind, STYLUS, PAD, ERASER, TOUCH)
+    ENUM_CLASS(Kind, STYLUS, PAD, ERASER, TOUCH) // cppcheck-suppress unknownMacro
 
     std::string name;
     int id;
