@@ -144,7 +144,13 @@ Result<Area> libwacom::get_stylus_area(int stylus)
 
 Result<void> libwacom::set_stylus_area(int stylus, Area area)
 {
-    auto command = fmt::format("--set {} Area {} {} {} {}", stylus, std::round(area.offsetX), std::round(area.offsetY), std::round(area.width), std::round(area.height));
+    auto command = fmt::format("--set {} Area {} {} {} {}",
+        stylus,
+        std::round(area.offsetX),
+        std::round(area.offsetY),
+        std::round(area.width),
+        std::round(area.height)
+    );
     TRY(xsetwacom::execute(command));
     return {};
 }
@@ -158,14 +164,40 @@ Result<void> libwacom::reset_stylus_area(int stylus)
 
 Result<void> libwacom::set_stylus_output_from_display_name(int stylus, std::string_view displayName)
 {
-    auto command = fmt::format("--set \"{}\" MapToOutput {}", stylus, displayName);
+    auto command = fmt::format("--set {} MapToOutput {}", stylus, displayName);
     TRY(xsetwacom::execute(command));
     return {};
 }
 
 Result<void> libwacom::set_stylus_output_from_display_area(int stylus, Area area)
 {
-    auto command = fmt::format("--set \"{}\" MapToOutput {}x{}+{}+{}", stylus, std::round(area.width), std::round(area.height), std::round(area.offsetX), std::round(area.offsetY));
+    auto command = fmt::format("--set {} MapToOutput {}x{}+{}+{}",
+        stylus,
+        static_cast<int>(std::round(area.width)),
+        static_cast<int>(std::round(area.height)),
+        static_cast<int>(std::round(area.offsetX)),
+        static_cast<int>(std::round(area.offsetY))
+    );
     TRY(xsetwacom::execute(command));
+    return {};
+}
+
+liberror::Result<void> set_stylus_handedness(int stylus, Handedness handedness)
+{
+    std::string command {};
+    switch (handedness)
+    {
+    case Handedness::LEFT: {
+        command = fmt::format("--set {} Rotate 3", stylus);
+        break;
+    }
+    case Handedness::RIGHT: {
+        command = fmt::format("--set {} Rotate 0", stylus);
+        break;
+    }
+    }
+
+    TRY(xsetwacom::execute(command));
+
     return {};
 }

@@ -18,6 +18,8 @@ struct Device
 
 liberror::Result<std::vector<Device>> get_available_devices();
 
+ENUM_CLASS(Handedness, LEFT, RIGHT)
+
 struct Pressure
 {
     float minX, minY;
@@ -42,5 +44,6 @@ liberror::Result<void> set_stylus_area(int stylus, Area area);
 liberror::Result<void> reset_stylus_area(int stylus);
 liberror::Result<void> set_stylus_output_from_display_name(int stylus, std::string_view displayName);
 liberror::Result<void> set_stylus_output_from_display_area(int stylus, Area area);
+liberror::Result<void> set_stylus_handedness(int stylus, Handedness handedness);
 
 }
