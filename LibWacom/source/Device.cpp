@@ -182,7 +182,7 @@ Result<void> libwacom::set_stylus_output_from_display_area(int stylus, Area area
     return {};
 }
 
-liberror::Result<void> set_stylus_handedness(int stylus, Handedness handedness)
+liberror::Result<void> libwacom::set_stylus_handedness(int stylus, Handedness handedness)
 {
     std::string command {};
     switch (handedness)
