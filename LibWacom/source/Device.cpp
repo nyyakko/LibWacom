@@ -101,7 +101,7 @@ Result<int> libwacom::get_stylus_threshold(int stylus)
 Result<void> libwacom::set_stylus_threshold(int stylus, int threshold)
 {
     auto command = fmt::format("--set {} Threshold {}", stylus, threshold);
-    auto output = TRY(xsetwacom::execute(command));
+    TRY(xsetwacom::execute(command));
     return {};
 }
 
@@ -118,7 +118,7 @@ Result<int> libwacom::get_stylus_cursor_proximity(int stylus)
 Result<void> libwacom::set_stylus_cursor_proximity(int stylus, int proximity)
 {
     auto command = fmt::format("--set {} CursorProximity {}", stylus, proximity);
-    auto output = TRY(xsetwacom::execute(command));
+    TRY(xsetwacom::execute(command));
     return {};
 }
 
