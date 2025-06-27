@@ -2,7 +2,7 @@
 
 # installation
 
-you may copy the files under LibWacom/include into your project, install it with [CPM](https://github.com/cpm-cmake/CPM.cmake) or install directly into your system with the following: 
+you may install it with [CPM](https://github.com/cpm-cmake/CPM.cmake) or install directly into your system with the following:
 
 * ``py install.py``
 
@@ -14,9 +14,8 @@ cmake_minimum_required_version(VERSION 3.25)
 project(CoolProject LANGUAGES CXX)
 
 find_package(LibWacom CONFIG REQUIRED)
-find_package(LibWacom CONFIG REQUIRED)
 add_executable(CoolProject source.cpp)
-target_link_libraries(CoolProject PRIVATE LibWacom::LibWacom LibError::LibError)
+target_link_libraries(CoolProject PRIVATE LibWacom::LibWacom)
 ```
 
 # examples
@@ -32,7 +31,7 @@ int main()
 
     if (!devices.has_value())
     {
-        std::cout << "No devices were found!";
+        std::cerr << "No devices were found!";
         return EXIT_FAILURE;
     }
 
