@@ -94,6 +94,9 @@ liberror::Result<std::pair<std::string, std::string>> execute(std::string comman
 
     waitpid(forkID, nullptr, 0);
 
+    if (!out.empty() && out.back() == '\n') out.pop_back();
+    if (!err.empty() && err.back() == '\n') err.pop_back();
+
     return std::make_pair(out, err);
 }
 
