@@ -6,6 +6,7 @@
 
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <poll.h>
 
 #include <algorithm>
 #include <functional>
@@ -19,20 +20,24 @@ namespace xsetwacom {
 
 liberror::Result<std::pair<std::string, std::string>> execute(std::string command, std::vector<std::string> arguments)
 {
-    int stdoutPipe[2];
+        int stdoutPipe[2];
     pipe(stdoutPipe);
 
     int stderrPipe[2];
     pipe(stderrPipe);
 
     pid_t forkID = fork();
-    if (forkID != 0)
+    if (forkID == 0)
     {
+        dup2(stdoutPipe[1], STDOUT_FILENO);
+        close(stdoutPipe[0]); close(stdoutPipe[1]);
+        dup2(stderrPipe[1], STDERR_FILENO);
+        close(stderrPipe[0]); close(stderrPipe[1]);
+
         auto devNull = open("/dev/null", O_RDONLY);
         assert(devNull >= 0);
         dup2(devNull, STDIN_FILENO);
-        dup2(stdoutPipe[1], STDOUT_FILENO);
-        dup2(stderrPipe[1], STDERR_FILENO);
+        close(devNull);
 
         std::vector<char*> argumentsData { command.data() };
         // cppcheck-suppress constParameterReference
@@ -49,24 +54,44 @@ liberror::Result<std::pair<std::string, std::string>> execute(std::string comman
     close(stdoutPipe[1]);
     close(stderrPipe[1]);
 
-    auto fnReadPipe = [] (int pipe) {
-        std::string output {};
+    std::string out;
+    std::string err;
 
-        while (true)
-        {
-            std::array<char, 256> buffer {};
-            if (read(pipe, buffer.data(), buffer.size()) <= 0) break;
-            output.append(buffer.data());
-        }
-
-        return output;
+    std::array pfds {
+        pollfd { stdoutPipe[0], POLLIN, 0 },
+        pollfd { stderrPipe[0], POLLIN, 0 }
     };
 
-    auto out = fnReadPipe(stdoutPipe[0]);
-    auto err = fnReadPipe(stderrPipe[0]);
+    for (auto reading = true; reading;)
+    {
+        auto result = poll(pfds.data(), pfds.size(), -1);
+        if (result <= 0) break;
+
+        for (auto& pfd : pfds)
+        {
+            if (pfd.revents & POLLIN)
+            {
+                std::array<char, 256> buffer {};
+
+                auto count = read(pfd.fd, buffer.data(), buffer.size());
+
+                if (pfd.fd == stdoutPipe[0])
+                    out.append(buffer.data());
+                else
+                    err.append(buffer.data());
+
+                reading = count > 0;
+            }
+            else if (pfd.revents & (POLLHUP | POLLERR))
+            {
+                reading = false;
+            }
+        }
+    }
 
     close(stdoutPipe[0]);
     close(stderrPipe[0]);
+
     waitpid(forkID, nullptr, 0);
 
     return std::make_pair(out, err);
