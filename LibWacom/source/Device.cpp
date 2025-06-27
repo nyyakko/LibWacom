@@ -1,7 +1,6 @@
 #include "Device.hpp"
 
 #include <fmt/format.h>
-#include <liberror/Result.hpp>
 #include <liberror/Try.hpp>
 
 #include <algorithm>
@@ -73,12 +72,6 @@ Result<Pressure> libwacom::get_stylus_pressure_curve(int stylus)
     sstream >> pressure.maxX >> pressure.maxY;
     pressure.maxX /= 100.f;
     pressure.maxY /= 100.f;
-
-    if (sstream.fail())
-    {
-        return liberror::make_error(output);
-    }
-
     return pressure;
 }
 
@@ -91,13 +84,7 @@ Result<void> libwacom::set_stylus_pressure_curve(int stylus, Pressure pressure)
         static_cast<int>(std::round(pressure.maxX * 100.f)),
         static_cast<int>(std::round(pressure.maxY * 100.f))
     );
-    auto output = TRY(xsetwacom::execute(command));
-
-    if (!output.empty())
-    {
-        return liberror::make_error(output);
-    }
-
+    TRY(xsetwacom::execute(command));
     return {};
 }
 
@@ -108,12 +95,6 @@ Result<int> libwacom::get_stylus_threshold(int stylus)
     auto output = TRY(xsetwacom::execute(command));
     std::stringstream sstream(output);
     sstream >> threshold;
-
-    if (sstream.fail())
-    {
-        return liberror::make_error(output);
-    }
-
     return threshold;
 }
 
@@ -121,12 +102,6 @@ Result<void> libwacom::set_stylus_threshold(int stylus, int threshold)
 {
     auto command = fmt::format("--set {} Threshold {}", stylus, threshold);
     auto output = TRY(xsetwacom::execute(command));
-
-    if (!output.empty())
-    {
-        return liberror::make_error(output);
-    }
-
     return {};
 }
 
@@ -137,12 +112,6 @@ Result<int> libwacom::get_stylus_cursor_proximity(int stylus)
     auto output = TRY(xsetwacom::execute(command));
     std::stringstream sstream(output);
     sstream >> proximity;
-
-    if (sstream.fail())
-    {
-        return liberror::make_error(output);
-    }
-
     return proximity;
 }
 
@@ -150,12 +119,6 @@ Result<void> libwacom::set_stylus_cursor_proximity(int stylus, int proximity)
 {
     auto command = fmt::format("--set {} CursorProximity {}", stylus, proximity);
     auto output = TRY(xsetwacom::execute(command));
-
-    if (!output.empty())
-    {
-        return liberror::make_error(output);
-    }
-
     return {};
 }
 
@@ -176,12 +139,6 @@ Result<Area> libwacom::get_stylus_area(int stylus)
     std::stringstream sstream(output);
     sstream >> area.offsetX >> area.offsetY;
     sstream >> area.width >> area.height;
-
-    if (sstream.fail())
-    {
-        return liberror::make_error(output);
-    }
-
     return area;
 }
 
@@ -194,39 +151,21 @@ Result<void> libwacom::set_stylus_area(int stylus, Area area)
         std::round(area.width),
         std::round(area.height)
     );
-    auto output = TRY(xsetwacom::execute(command));
-
-    if (!output.empty())
-    {
-        return liberror::make_error(output);
-    }
-
+    TRY(xsetwacom::execute(command));
     return {};
 }
 
 Result<void> libwacom::reset_stylus_area(int stylus)
 {
     auto command = fmt::format("--set {} ResetArea", stylus);
-    auto output = TRY(xsetwacom::execute(command));
-
-    if (!output.empty())
-    {
-        return liberror::make_error(output);
-    }
-
+    TRY(xsetwacom::execute(command));
     return {};
 }
 
 Result<void> libwacom::set_stylus_output_from_display_name(int stylus, std::string_view displayName)
 {
     auto command = fmt::format("--set {} MapToOutput {}", stylus, displayName);
-    auto output = TRY(xsetwacom::execute(command));
-
-    if (!output.empty())
-    {
-        return liberror::make_error(output);
-    }
-
+    TRY(xsetwacom::execute(command));
     return {};
 }
 
@@ -239,13 +178,7 @@ Result<void> libwacom::set_stylus_output_from_display_area(int stylus, Area area
         static_cast<int>(std::round(area.offsetX)),
         static_cast<int>(std::round(area.offsetY))
     );
-    auto output = TRY(xsetwacom::execute(command));
-
-    if (!output.empty())
-    {
-        return liberror::make_error(output);
-    }
-
+    TRY(xsetwacom::execute(command));
     return {};
 }
 
@@ -264,12 +197,7 @@ liberror::Result<void> libwacom::set_stylus_handedness(int stylus, Handedness ha
     }
     }
 
-    auto output = TRY(xsetwacom::execute(command));
-
-    if (!output.empty())
-    {
-        return liberror::make_error(output);
-    }
+    TRY(xsetwacom::execute(command));
 
     return {};
 }
