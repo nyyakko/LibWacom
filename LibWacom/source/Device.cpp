@@ -20,7 +20,7 @@ namespace xsetwacom {
 
 liberror::Result<std::pair<std::string, std::string>> execute(std::string command, std::vector<std::string> arguments)
 {
-        int stdoutPipe[2];
+    int stdoutPipe[2];
     pipe(stdoutPipe);
 
     int stderrPipe[2];
