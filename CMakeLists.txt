@@ -9,6 +9,7 @@ CPMAddPackage("gh:fmtlib/fmt#10.2.1")
 CPMAddPackage("gh:nyyakko/expected#master")
 CPMAddPackage("gh:nyyakko/LibError#master")
 CPMAddPackage("gh:nyyakko/LibEnum#master")
+CPMAddPackage("gh:nyyakko/LibExec#master")
 CPMAddPackage("gh:ericniebler/range-v3#0.12.0")
 
 include(cmake/static_analyzers.cmake)
@@ -25,6 +26,7 @@ set(LibWacom_ExternalLibraries
     fmt::fmt
     LibError::LibError
     LibEnum::LibEnum
+    LibExec::LibExec
     range-v3::range-v3
 )
 

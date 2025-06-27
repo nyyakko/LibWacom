@@ -2,6 +2,7 @@
 
 #include <fmt/format.h>
 #include <liberror/Try.hpp>
+#include <libexec/Execute.hpp>
 #include <range/v3/view.hpp>
 
 #include <sys/wait.h>
@@ -18,91 +19,9 @@ using namespace libwacom;
 
 namespace xsetwacom {
 
-liberror::Result<std::pair<std::string, std::string>> execute(std::string command, std::vector<std::string> arguments)
-{
-    int stdoutPipe[2];
-    pipe(stdoutPipe);
-
-    int stderrPipe[2];
-    pipe(stderrPipe);
-
-    pid_t forkID = fork();
-    if (forkID == 0)
-    {
-        dup2(stdoutPipe[1], STDOUT_FILENO);
-        close(stdoutPipe[0]); close(stdoutPipe[1]);
-        dup2(stderrPipe[1], STDERR_FILENO);
-        close(stderrPipe[0]); close(stderrPipe[1]);
-
-        auto devNull = open("/dev/null", O_RDONLY);
-        assert(devNull >= 0);
-        dup2(devNull, STDIN_FILENO);
-        close(devNull);
-
-        std::vector<char*> argumentsData { command.data() };
-        // cppcheck-suppress constParameterReference
-        std::transform(arguments.begin(), arguments.end(), std::back_inserter(argumentsData), [] (std::string& str) {
-            return str.data();
-        });
-
-        argumentsData.push_back(nullptr);
-
-        execvp(command.data(), argumentsData.data());
-        return liberror::make_error(strerror(errno));
-    }
-
-    close(stdoutPipe[1]);
-    close(stderrPipe[1]);
-
-    std::string out;
-    std::string err;
-
-    std::array pfds {
-        pollfd { stdoutPipe[0], POLLIN, 0 },
-        pollfd { stderrPipe[0], POLLIN, 0 }
-    };
-
-    for (auto reading = true; reading;)
-    {
-        auto result = poll(pfds.data(), pfds.size(), -1);
-        if (result <= 0) break;
-
-        for (auto& pfd : pfds)
-        {
-            if (pfd.revents & POLLIN)
-            {
-                std::array<char, 256> buffer {};
-
-                auto count = read(pfd.fd, buffer.data(), buffer.size());
-
-                if (pfd.fd == stdoutPipe[0])
-                    out.append(buffer.data());
-                else
-                    err.append(buffer.data());
-
-                reading = count > 0;
-            }
-            else if (pfd.revents & (POLLHUP | POLLERR))
-            {
-                reading = false;
-            }
-        }
-    }
-
-    close(stdoutPipe[0]);
-    close(stderrPipe[0]);
-
-    waitpid(forkID, nullptr, 0);
-
-    if (!out.empty() && out.back() == '\n') out.pop_back();
-    if (!err.empty() && err.back() == '\n') err.pop_back();
-
-    return std::make_pair(out, err);
-}
-
 liberror::Result<std::string> execute(std::string command)
 {
-    auto [out, err] = TRY(execute("xsetwacom", command | ranges::views::split(' ') | ranges::to<std::vector<std::string>>));
+    auto [out, err] = TRY(libexec::execute("xsetwacom", command | ranges::views::split(' ') | ranges::to<std::vector<std::string>>));
     if (!err.empty()) return liberror::make_error(err);
     return out;
 }
