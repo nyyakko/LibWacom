@@ -5,6 +5,7 @@
 #include <range/v3/view.hpp>
 
 #include <sys/wait.h>
+#include <fcntl.h>
 
 #include <algorithm>
 #include <functional>
@@ -15,8 +16,6 @@ using namespace liberror;
 using namespace libwacom;
 
 namespace xsetwacom {
-
-namespace {
 
 liberror::Result<std::pair<std::string, std::string>> execute(std::string command, std::vector<std::string> arguments)
 {
@@ -29,6 +28,9 @@ liberror::Result<std::pair<std::string, std::string>> execute(std::string comman
     pid_t forkID = fork();
     if (forkID != 0)
     {
+        auto devNull = open("/dev/null", O_RDONLY);
+        assert(devNull >= 0);
+        dup2(devNull, STDIN_FILENO);
         dup2(stdoutPipe[1], STDOUT_FILENO);
         dup2(stderrPipe[1], STDERR_FILENO);
 
@@ -68,8 +70,6 @@ liberror::Result<std::pair<std::string, std::string>> execute(std::string comman
     waitpid(forkID, nullptr, 0);
 
     return std::make_pair(out, err);
-}
-
 }
 
 liberror::Result<std::string> execute(std::string command)
