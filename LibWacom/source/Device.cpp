@@ -2,6 +2,9 @@
 
 #include <fmt/format.h>
 #include <liberror/Try.hpp>
+#include <range/v3/view.hpp>
+
+#include <sys/wait.h>
 
 #include <algorithm>
 #include <functional>
@@ -13,23 +16,66 @@ using namespace libwacom;
 
 namespace xsetwacom {
 
-static Result<std::string> execute(std::string_view command)
+namespace {
+
+std::string read_pipe_output(int pipe)
 {
     std::string output {};
-    auto fd = popen(fmt::format("xsetwacom {}", command).data(), "r");
-    if (fd == nullptr)
-        return make_error("File descriptor for xsetwacom command returned as nullptr");
 
     while (true)
     {
-        std::array<char, 512> buffer {0};
-        if (fgets(buffer.data(), buffer.size(), fd) == nullptr) break;
+        std::array<char, 256> buffer {};
+        if (read(pipe, buffer.data(), buffer.size()) <= 0) break;
         output.append(buffer.data());
     }
 
-    fclose(fd);
-
     return output;
+}
+
+liberror::Result<std::pair<std::string, std::string>> execute(std::string command, std::vector<std::string> arguments)
+{
+    int stdoutPipe[2];
+    pipe(stdoutPipe);
+
+    int stderrPipe[2];
+    pipe(stderrPipe);
+
+    pid_t forkID = fork();
+    if (forkID != 0)
+    {
+        dup2(stdoutPipe[1], STDOUT_FILENO);
+        dup2(stderrPipe[1], STDERR_FILENO);
+
+        std::vector<char*> argumentsData { command.data() };
+        // cppcheck-suppress constParameterReference
+        std::transform(arguments.begin(), arguments.end(), std::next(argumentsData.begin()), [] (std::string& str) {
+            return str.data();
+        });
+
+        execvp(command.data(), argumentsData.data());
+        return liberror::make_error(strerror(errno));
+    }
+
+    close(stdoutPipe[1]);
+    close(stderrPipe[1]);
+
+    auto out = read_pipe_output(stdoutPipe[0]);
+    auto err = read_pipe_output(stderrPipe[0]);
+
+    close(stdoutPipe[0]);
+    close(stderrPipe[0]);
+    waitpid(forkID, nullptr, 0);
+
+    return std::make_pair(out, err);
+}
+
+}
+
+liberror::Result<std::string> execute(std::string command)
+{
+    auto [out, err] = TRY(execute("xsetwacom", command | ranges::views::split(' ') | ranges::to<std::vector<std::string>>));
+    if (!err.empty()) return liberror::make_error(err);
+    return out;
 }
 
 }
