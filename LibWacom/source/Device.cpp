@@ -18,20 +18,6 @@ namespace xsetwacom {
 
 namespace {
 
-std::string read_pipe_output(int pipe)
-{
-    std::string output {};
-
-    while (true)
-    {
-        std::array<char, 256> buffer {};
-        if (read(pipe, buffer.data(), buffer.size()) <= 0) break;
-        output.append(buffer.data());
-    }
-
-    return output;
-}
-
 liberror::Result<std::pair<std::string, std::string>> execute(std::string command, std::vector<std::string> arguments)
 {
     int stdoutPipe[2];
@@ -48,9 +34,11 @@ liberror::Result<std::pair<std::string, std::string>> execute(std::string comman
 
         std::vector<char*> argumentsData { command.data() };
         // cppcheck-suppress constParameterReference
-        std::transform(arguments.begin(), arguments.end(), std::next(argumentsData.begin()), [] (std::string& str) {
+        std::transform(arguments.begin(), arguments.end(), std::back_inserter(argumentsData), [] (std::string& str) {
             return str.data();
         });
+
+        argumentsData.push_back(nullptr);
 
         execvp(command.data(), argumentsData.data());
         return liberror::make_error(strerror(errno));
@@ -59,8 +47,21 @@ liberror::Result<std::pair<std::string, std::string>> execute(std::string comman
     close(stdoutPipe[1]);
     close(stderrPipe[1]);
 
-    auto out = read_pipe_output(stdoutPipe[0]);
-    auto err = read_pipe_output(stderrPipe[0]);
+    auto fnReadPipe = [] (int pipe) {
+        std::string output {};
+
+        while (true)
+        {
+            std::array<char, 256> buffer {};
+            if (read(pipe, buffer.data(), buffer.size()) <= 0) break;
+            output.append(buffer.data());
+        }
+
+        return output;
+    };
+
+    auto out = fnReadPipe(stdoutPipe[0]);
+    auto err = fnReadPipe(stderrPipe[0]);
 
     close(stdoutPipe[0]);
     close(stderrPipe[0]);
